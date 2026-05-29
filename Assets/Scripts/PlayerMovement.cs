@@ -13,11 +13,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask jumpableGround;
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float jumpForce = 14f;
-    
+
     private float dirX = 0;
+    private float effectiveSpeed;
+    private float effectiveJump;
 
     private enum MovementState {idle,running,jumping,falling}
-    
+
 
     // Start is called before the first frame update
     private void Start()
@@ -27,6 +29,18 @@ public class PlayerMovement : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         rb.freezeRotation = true;
+
+        // Apply difficulty multipliers
+        if (SettingsManager.Instance != null)
+        {
+            effectiveSpeed = moveSpeed * SettingsManager.Instance.GetPlayerSpeedMultiplier();
+            effectiveJump = jumpForce * SettingsManager.Instance.GetJumpForceMultiplier();
+        }
+        else
+        {
+            effectiveSpeed = moveSpeed;
+            effectiveJump = jumpForce;
+        }
     }
 
     // Update is called once per frame
@@ -34,11 +48,11 @@ public class PlayerMovement : MonoBehaviour
     {
         dirX = Input.GetAxisRaw("Horizontal");
 
-        rb.velocity = new Vector2(dirX * 7f, rb.velocity.y);
+        rb.velocity = new Vector2(dirX * effectiveSpeed, rb.velocity.y);
 
         if (Input.GetKeyDown("space") && IsGrounded())
         {
-            rb.velocity = new Vector3(rb.velocity.x,jumpForce);
+            rb.velocity = new Vector3(rb.velocity.x, effectiveJump);
         }
         UpdateAnimationState();
     }
@@ -76,6 +90,6 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsGrounded()
     {
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f,jumpableGround);
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
     }
 }

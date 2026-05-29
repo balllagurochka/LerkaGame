@@ -9,6 +9,11 @@ public class Finish : MonoBehaviour
     void Start()
     {
         finishSound = GetComponent<AudioSource>();
+        // Apply volume from SettingsManager
+        if (SettingsManager.Instance != null)
+        {
+            finishSound.volume = SettingsManager.Instance.SfxVolume;
+        }
     }
 
 
